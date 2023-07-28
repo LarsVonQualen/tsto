@@ -1,25 +1,26 @@
 import { getObjectManager } from './get-object-manager.fn';
 import { Constructor } from './types/constructor.type';
+import { TstoValidationError } from './types/tsto-validation-error.type';
 
 export function tstoValidate<Target extends object>(
   object: object,
   to: Constructor<Target>,
-): Target | undefined | null;
+): TstoValidationError[];
 export function tstoValidate<Target extends object>(
   json: string,
   to: Constructor<Target>,
-): Target | undefined | null;
+): TstoValidationError[];
 export function tstoValidate<Target extends object>(
   jsonOrObject: object | string,
   to: Constructor<Target>,
-): Target | undefined | null {
+): TstoValidationError[] {
   const objectManager = getObjectManager(to);
 
   if (typeof jsonOrObject === 'string') {
     const obj = JSON.parse(jsonOrObject);
 
-    return objectManager.from(obj);
+    return objectManager.validate(obj);
   }
 
-  return objectManager.from(jsonOrObject);
+  return objectManager.validate(jsonOrObject);
 }

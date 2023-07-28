@@ -1,25 +1,39 @@
 import { Constructor } from './types/constructor.type';
 import { getObjectManager } from './get-object-manager.fn';
+import { TstoValidationError } from './types/tsto-validation-error.type';
 
+export function tstoFrom<Target extends object>(
+  object: object,
+  to: Constructor<Target>,
+  options: { looseMapping: false },
+): [Target | undefined | null, TstoValidationError[]];
+export function tstoFrom<Target extends object>(
+  object: object,
+  to: Constructor<Target>,
+  options: { looseMapping: true },
+): Target | undefined | null;
 export function tstoFrom<Target extends object>(
   object: object,
   to: Constructor<Target>,
 ): Target | undefined | null;
 export function tstoFrom<Target extends object>(
-  json: string,
+  object: object,
   to: Constructor<Target>,
-): Target | undefined | null;
-export function tstoFrom<Target extends object>(
-  jsonOrObject: object | string,
-  to: Constructor<Target>,
-): Target | undefined | null {
+  options?: { looseMapping: boolean },
+):
+  | (Target | undefined | null)
+  | [Target | undefined | null, TstoValidationError[]] {
   const objectManager = getObjectManager(to);
 
-  if (typeof jsonOrObject === 'string') {
-    const obj = JSON.parse(jsonOrObject);
-
-    return objectManager.from(obj);
+  if (!options) {
+    return objectManager.from<Target>(object);
+  } else if (options.looseMapping === true) {
+    return objectManager.from<Target>(object, {
+      looseMapping: true,
+    });
+  } else {
+    return objectManager.from<Target>(object, {
+      looseMapping: false,
+    });
   }
-
-  return objectManager.from(jsonOrObject);
 }

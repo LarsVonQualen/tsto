@@ -5,13 +5,22 @@ export function tstoObjectArray(
   arrayElementType: Function,
   options?: TstoOptions,
 ) {
-  return (target: any, key: string) => {
+  return (target: any, key?: string, parameterIndex?: any) => {
     const childObjectManager = getObjectManager(arrayElementType);
 
-    getObjectManager(target)?.registerObjectArray(
-      key,
-      childObjectManager,
-      options,
-    );
+    if (key !== undefined) {
+      getObjectManager(target)?.registerObjectArray(
+        key,
+        childObjectManager,
+        options,
+      );
+    } else {
+      getObjectManager(target)?.registerConstructorParameter(
+        parameterIndex,
+        'object-array',
+        childObjectManager,
+        options,
+      );
+    }
   };
 }
