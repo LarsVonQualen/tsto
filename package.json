@@ -1,6 +1,6 @@
 {
   "name": "tsto",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Typescript Transfer Objects - library for seamlessly transform loosly typed input into strongly typed output.",
   "keywords": [
     "typescript",
