@@ -51,8 +51,5 @@
     "*.{json,html,js,pug,yml,scss}": [
       "prettier --write"
     ]
-  },
-  "dependencies": {
-    "reflect-metadata": "^0.1.13"
   }
 }
