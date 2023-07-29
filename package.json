@@ -17,12 +17,12 @@
   ],
   "scripts": {
     "start": "chokidar -c \"npm test\" \"**/*.ts\"",
-    "build": "tsc --project tsconfig.json",
+    "build": "rimraf ./dist && tsc --project tsconfig.json",
     "test": "testyts",
     "lint-staged": "lint-staged",
     "prepare": "husky install",
     "hooks:precommit": "npm run lint-staged",
-    "prepublish": "npm run build && rimraf -v -g ./dist/**/*.spec.d.ts ./dist/**/*.spec.js ./dist/**/*.spec.js.map"
+    "prepublishOnly": "npm run build && rimraf -v -g ./dist/**/*.spec.d.ts ./dist/**/*.spec.js ./dist/**/*.spec.js.map"
   },
   "author": "Lars von Qualen <lars@lvq.dk>",
   "license": "MIT",
