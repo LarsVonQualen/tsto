@@ -1,13 +1,12 @@
 import { getObjectManager } from './get-object-manager.fn';
-import { TstoObjectManager } from './tsto-object-manager';
-import { Constructor } from './types/constructor.type';
 import { TstoOptions } from './types/tsto-options.type';
+import { TstoSupportedPrimitiveTypes } from './types/tsto-supported-property-types.type';
 
-function createObjectMapper<Target>(
+function createPrimitiveArrayMapper(
   options: TstoOptions,
-  objectManager: TstoObjectManager<Target>,
+  arrayElementType: TstoSupportedPrimitiveTypes,
 ) {
-  return (rawValue?: object | null) => {
+  return (rawValue?: (string | number)[] | null) => {
     if (options.nullable === true && rawValue === null) {
       return null;
     }
@@ -16,16 +15,22 @@ function createObjectMapper<Target>(
       return undefined;
     }
 
-    return objectManager.from(rawValue);
+    return rawValue?.map(obj =>
+      arrayElementType === 'string'
+        ? String(obj)
+        : arrayElementType === 'number'
+        ? Number(obj)
+        : undefined,
+    );
   };
 }
 
-function createObjectValidator<Target>(
+function createPrimitiveArrayValidator(
   options: TstoOptions,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  objectManager: TstoObjectManager<Target>,
+  arrayElementType: TstoSupportedPrimitiveTypes,
 ) {
-  return (rawValue?: object | null) => {
+  return (rawValue?: (string | number)[] | null) => {
     const errors: string[] = [];
 
     if (options.nullable === false && rawValue === null) {
@@ -37,18 +42,18 @@ function createObjectValidator<Target>(
     }
   };
 }
-export function tstoObject<Target>(
-  objectType: Constructor<Target>,
+
+export function tstoPrimitiveArray(
+  arrayElementType: TstoSupportedPrimitiveTypes,
   options?: TstoOptions,
-) {
-  const childObjectManager = getObjectManager(objectType);
+): (target: any, key?: string, parameterIndex?: any) => void {
   const opts: TstoOptions = {
     nullable: true,
     undefineable: true,
     ...(options ?? {}),
   };
-  const mapper = createObjectMapper(opts, childObjectManager);
-  const validator = createObjectValidator(opts, childObjectManager);
+  const mapper = createPrimitiveArrayMapper(opts, arrayElementType);
+  const validator = createPrimitiveArrayValidator(opts, arrayElementType);
 
   return (target: any, key?: string, parameterIndex?: any) => {
     getObjectManager(target).registerHandler(

@@ -1,4 +1,4 @@
 export type TstoOptions = {
-  nullable?: true;
-  undefineable?: true;
+  nullable?: boolean;
+  undefineable?: boolean;
 };

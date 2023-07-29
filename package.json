@@ -9,7 +9,10 @@
   "scripts": {
     "start": "chokidar -c \"npm test\" \"**/*.ts\"",
     "build": "tsc --project tsconfig.json && rimraf -v -g ./dist/**/*.spec.d.ts ./dist/**/*.spec.js ./dist/**/*.spec.js.map",
-    "test": "testyts"
+    "test": "testyts",
+    "lint-staged": "lint-staged",
+    "prepare": "husky install",
+    "hooks:precommit": "npm run lint-staged"
   },
   "author": "",
   "license": "MIT",
@@ -24,9 +27,22 @@
     "eslint-config-prettier": "^8.9.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jsdoc": "^46.4.5",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
+    "organize-imports-cli": "^0.10.0",
     "prettier": "^3.0.0",
     "rimraf": "^5.0.1",
     "testyts": "^1.5.0",
     "typescript": "^5.1.6"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "organize-imports-cli",
+      "prettier --write",
+      "eslint --cache --fix"
+    ],
+    "*.{json,html,js,pug,yml,scss}": [
+      "prettier --write"
+    ]
   }
 }

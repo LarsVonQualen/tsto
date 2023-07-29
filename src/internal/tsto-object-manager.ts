@@ -1,153 +1,34 @@
-import { TstoOptions } from './types/tsto-options.type';
 import {
-  TstoBaseDescription,
-  TstoConstructorParameterDescription,
-  TstoPropertyDescription,
-} from './types/tsto-property-description.type';
-import { TstoSupportedPropertyTypes } from './types/tsto-supported-property-types.type';
-import { TstoValidationError } from './types/tsto-validation-error.type';
+  ConstructorParameterHandler,
+  createHandler,
+  PropertyHandler,
+} from './create-handler.fn';
+import { Constructor } from './types/constructor.type';
 
-export class TstoObjectManager {
-  private descriptions: TstoBaseDescription[] = [];
-  private constructorParameters: {
-    name: string;
-    parameterIndex: number;
-    isPublic: boolean;
-  }[] = [];
+export class TstoObjectManager<Target> {
+  public propertyHandlers: PropertyHandler[] = [];
+  public constructorParameterHandlers: ConstructorParameterHandler[] = [];
 
-  constructor(private target: any) {}
+  constructor(private target: Constructor<Target>) {}
 
-  registerProperty(
-    name: string,
-    type: TstoSupportedPropertyTypes,
-    childObjectManager?: TstoObjectManager,
-    options?: TstoOptions,
+  registerHandler<T>(
+    mapper: (rawValue?: T | null) => any,
+    validator: (rawValue?: T | null) => any,
+    key?: string,
+    parameterIndex?: any,
   ) {
-    this.descriptions.push({
-      name,
-      type,
-      childObjectManager,
-      options,
-    });
-  }
+    if (key !== undefined) {
+      const handler = createHandler(key, mapper, validator);
 
-  registerConstructorParameter(
-    parameterIndex: number,
-    type: TstoSupportedPropertyTypes,
-    childObjectManager?: TstoObjectManager,
-    options?: TstoOptions,
-  ) {
-    this.descriptions.push({
-      type,
-      parameterIndex,
-      options,
-      childObjectManager,
-    });
-  }
+      this.propertyHandlers.push(handler);
+    } else {
+      const handler = createHandler(parameterIndex, mapper, validator);
 
-  registerString(key: string, options?: TstoOptions) {
-    this.registerProperty(key, 'string', undefined, options);
-  }
-
-  registerNumber(key: string, options?: TstoOptions) {
-    this.registerProperty(key, 'number', undefined, options);
-  }
-
-  registerObject(
-    key: string,
-    childObjectManager: TstoObjectManager,
-    options?: TstoOptions,
-  ) {
-    this.registerProperty(key, 'object', childObjectManager, options);
-  }
-
-  registerObjectArray(
-    key: string,
-    childObjectManager: TstoObjectManager,
-    options?: TstoOptions,
-  ) {
-    this.registerProperty(key, 'object-array', childObjectManager, options);
-  }
-
-  validate(obj: object): TstoValidationError[] {
-    return this.getPropertyDescriptions().map(property =>
-      this.validateProperty(property.name, property as TstoPropertyDescription),
-    );
-  }
-
-  from<Target>(obj: object | undefined | null): Target | undefined | null;
-  from<Target>(
-    obj: object | undefined | null,
-    options: { looseMapping: true },
-  ): Target | undefined | null;
-  from<Target>(
-    obj: object | undefined | null,
-    options: { looseMapping: false },
-  ): [Target | undefined | null, TstoValidationError[]];
-  from<Target>(
-    obj: object | undefined | null,
-    options?: { looseMapping: boolean },
-  ):
-    | (Target | undefined | null)
-    | [Target | undefined | null, TstoValidationError[]] {
-    return options?.looseMapping === false
-      ? this.doStrictMapping<Target>(obj)
-      : this.doLooseMapping<Target>(obj);
-  }
-
-  private getPropertyDescriptions(): TstoPropertyDescription[] {
-    return this.descriptions
-      .map(description =>
-        typeof description.name === 'string'
-          ? (description as TstoPropertyDescription)
-          : null,
-      )
-      .filter(
-        propertyDescription => propertyDescription !== null,
-      ) as TstoPropertyDescription[];
-  }
-
-  private getConstructorParameterDescriptions(): TstoConstructorParameterDescription[] {
-    return this.descriptions
-      .map(description =>
-        typeof description.parameterIndex === 'number'
-          ? (description as TstoConstructorParameterDescription)
-          : null,
-      )
-      .filter(
-        constructorParameterDescription =>
-          constructorParameterDescription !== null,
-      ) as TstoConstructorParameterDescription[];
-  }
-
-  private doStrictMapping<Target>(
-    obj: object | undefined | null,
-  ): [Target | undefined | null, TstoValidationError[]] {
-    if (obj === undefined) {
-      return [undefined, []];
+      this.constructorParameterHandlers.push(handler);
     }
-
-    if (obj === null) {
-      return [null, []];
-    }
-
-    const result = this.getPropertyDescriptions()
-      .map(property => ({
-        key: property.name,
-        value: this.getMappedValue(obj[property.name], property),
-      }))
-      .reduce((obj, { key, value }) => {
-        obj[key] = value;
-
-        return obj;
-      }, this.activateNewInstance(obj));
-
-    return [result, []];
   }
 
-  private doLooseMapping<Target>(
-    obj: object | undefined | null,
-  ): Target | undefined | null {
+  from(obj?: object | null) {
     if (obj === undefined) {
       return undefined;
     }
@@ -156,31 +37,32 @@ export class TstoObjectManager {
       return null;
     }
 
-    return this.getPropertyDescriptions()
-      .filter(prop => typeof prop.name === 'string')
-      .map(property => ({
-        key: property.name,
-        value: this.getMappedValue(obj[property.name], property),
+    return this.propertyHandlers
+      .map(handler => ({
+        key: handler.name,
+        value: handler.mapper(obj[handler.name]),
       }))
-      .reduce((obj, { key, value }) => {
-        obj[key] = value;
+      .reduce((target, { key, value }) => {
+        target[key] = value;
 
-        return obj;
-      }, this.activateNewInstance(obj));
+        return target;
+      }, this.createNewTargetInstance(obj));
   }
 
-  private activateNewInstance(obj: object) {
-    if (!this.target.constructor) {
-      throw new Error('Unable to instantiate class');
+  private createNewTargetInstance(obj: object) {
+    const ctor = this.target.constructor as Constructor<Target>;
+
+    if (!ctor) {
+      throw new Error(
+        'Unable to instantiate target does not have a constructor',
+      );
     }
 
-    const parameterDescriptions = this.getConstructorParameterDescriptions();
-
-    if (!parameterDescriptions.length) {
-      return new this.target.constructor();
+    if (this.constructorParameterHandlers.length === 0) {
+      return new this.target();
     }
 
-    const contructorDefinition = this.target.constructor.toString() as string;
+    const contructorDefinition = ctor.toString() as string;
     const CTOR_PARAMS_REGEX = /constructor\((.*)\)/;
     const matches = CTOR_PARAMS_REGEX.exec(contructorDefinition);
 
@@ -198,7 +80,7 @@ export class TstoObjectManager {
         .map(param => {
           if (!param.isPublic) {
             throw new Error(
-              `Parameter ${param.name} in constructor of ${this.target.constructor.name} is not public. Tsto does not support private constructor parameters.`,
+              `Parameter ${param.name} in constructor of ${ctor.name} is not public. Tsto does not support private constructor parameters.`,
             );
           }
 
@@ -208,87 +90,22 @@ export class TstoObjectManager {
           };
         })
         .sort((a, b) => a.parameterIndex - b.parameterIndex)
-        .map(param => param.value);
+        .map(
+          param =>
+            this.getConstructorParameterHandler(param.parameterIndex)?.mapper(
+              param.value,
+            ),
+        );
 
-      return new this.target.constructor(...params);
+      return new ctor(...params);
     }
 
-    return new this.target.constructor();
+    return new ctor();
   }
 
-  private validateProperty(
-    rawValue: any,
-    description: TstoPropertyDescription,
-  ): TstoValidationError {
-    return { error: '', path: '', type: 'string' };
-  }
-
-  private getMappedValue(rawValue: any, property: TstoPropertyDescription) {
-    switch (property.type) {
-      case 'number':
-        return this.handleNumber(rawValue, property);
-      case 'string':
-        return this.handleString(rawValue, property);
-      case 'object':
-        return this.handleObject(rawValue, property);
-      case 'object-array':
-        return this.handleArray(rawValue, property);
-      default:
-        throw new Error('unknown property type');
-    }
-  }
-
-  private handleNumber(rawValue: any, { options }: TstoPropertyDescription) {
-    if (options?.nullable && rawValue === null) {
-      return null;
-    }
-
-    if (options?.undefineable && rawValue === undefined) {
-      return undefined;
-    }
-
-    return Number(rawValue);
-  }
-
-  private handleString(rawValue: any, { options }: TstoPropertyDescription) {
-    if (options?.nullable && rawValue === null) {
-      return null;
-    }
-
-    if (options?.undefineable && rawValue === undefined) {
-      return undefined;
-    }
-
-    return String(rawValue);
-  }
-
-  private handleObject(
-    rawValue: object | null | undefined,
-    { options, childObjectManager }: TstoPropertyDescription,
-  ) {
-    if (options?.nullable && rawValue === null) {
-      return null;
-    }
-
-    if (options?.undefineable && rawValue === undefined) {
-      return undefined;
-    }
-
-    return childObjectManager?.from(rawValue);
-  }
-
-  private handleArray(
-    rawValue: object[] | null | undefined,
-    { options, childObjectManager }: TstoPropertyDescription,
-  ) {
-    if (options?.nullable && rawValue === null) {
-      return null;
-    }
-
-    if (options?.undefineable && rawValue === undefined) {
-      return undefined;
-    }
-
-    return rawValue?.map(val => childObjectManager?.from(val)) ?? undefined;
+  private getConstructorParameterHandler(parameterIndex: number) {
+    return this.constructorParameterHandlers.find(
+      handler => handler.parameterIndex === parameterIndex,
+    );
   }
 }

@@ -1,1 +1,9 @@
-export * from './internal/public_api';
+export { tsto } from './internal/tsto';
+export { tstoArray } from './internal/tsto-array';
+export { tstoFrom } from './internal/tsto-from.fn';
+export { tstoMixedArray } from './internal/tsto-mixed-array';
+export { tstoNumber } from './internal/tsto-number';
+export { tstoObject } from './internal/tsto-object';
+export { tstoObjectArray } from './internal/tsto-object-array';
+export { tstoPrimitiveArray } from './internal/tsto-primitive-array';
+export { tstoString } from './internal/tsto-string';

@@ -1,13 +1,17 @@
 import { TstoObjectManager } from '../tsto-object-manager';
 import { TstoOptions } from './tsto-options.type';
-import { TstoSupportedPropertyTypes } from './tsto-supported-property-types.type';
+import {
+  TstoSupportedPrimitiveTypes,
+  TstoSupportedPropertyTypes,
+} from './tsto-supported-property-types.type';
 
 export type TstoBaseDescription = {
   type: TstoSupportedPropertyTypes;
-  childObjectManager?: TstoObjectManager;
+  childObjectManager?: TstoObjectManager<any>;
   options?: TstoOptions;
   parameterIndex?: number;
   name?: string;
+  arrayElementTypes?: (Function | TstoSupportedPrimitiveTypes)[];
 };
 
 export type TstoConstructorParameterDescription = TstoBaseDescription & {

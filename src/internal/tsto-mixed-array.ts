@@ -1,8 +1,13 @@
 import { getObjectManager } from './get-object-manager.fn';
+import { MixedArrayElementTypes } from './types/mixed-array-element-types.type';
 import { TstoOptions } from './types/tsto-options.type';
 
-function createNumberMapper(options: TstoOptions) {
-  return (rawValue?: number | null) => {
+function createMixedArrayMapper(
+  options: TstoOptions,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  arrayElementTypes: MixedArrayElementTypes[],
+) {
+  return (rawValue?: any[] | null) => {
     if (options.nullable === true && rawValue === null) {
       return null;
     }
@@ -11,12 +16,16 @@ function createNumberMapper(options: TstoOptions) {
       return undefined;
     }
 
-    return Number(rawValue ?? 0);
+    return rawValue?.map(obj => obj);
   };
 }
 
-function createNumberValidator(options: TstoOptions) {
-  return (rawValue?: number | null) => {
+function createMixedArrayValidator(
+  options: TstoOptions,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  arrayElementTypes: MixedArrayElementTypes[],
+) {
+  return (rawValue?: any[] | null) => {
     const errors: string[] = [];
 
     if (options.nullable === false && rawValue === null) {
@@ -29,14 +38,17 @@ function createNumberValidator(options: TstoOptions) {
   };
 }
 
-export function tstoNumber(options?: TstoOptions) {
+export function tstoMixedArray(
+  arrayElementTypes: MixedArrayElementTypes[],
+  options?: TstoOptions,
+): (target: any, key?: string, parameterIndex?: any) => void {
   const opts: TstoOptions = {
     nullable: true,
     undefineable: true,
     ...(options ?? {}),
   };
-  const mapper = createNumberMapper(opts);
-  const validator = createNumberValidator(opts);
+  const mapper = createMixedArrayMapper(opts, arrayElementTypes);
+  const validator = createMixedArrayValidator(opts, arrayElementTypes);
 
   return (target: any, key?: string, parameterIndex?: any) => {
     getObjectManager(target).registerHandler(

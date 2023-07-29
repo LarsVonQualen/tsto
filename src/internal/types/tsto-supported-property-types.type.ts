@@ -1,5 +1,5 @@
+export type TstoSupportedPrimitiveTypes = 'string' | 'number';
+
 export type TstoSupportedPropertyTypes =
-  | 'string'
-  | 'number'
-  | 'object'
-  | 'object-array';
+  | TstoSupportedPrimitiveTypes
+  | ('object' | 'array' | 'multidimensional-array');
