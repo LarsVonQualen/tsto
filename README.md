@@ -30,6 +30,7 @@ You could solve this by creating custom mappers, but because we're using Typescr
 Consider the following example (I know, there's a lot going on, but bear with me):
 
 ```typescript
+// test.dto.ts
 import {
   tsto,
   tstoArray,
@@ -92,6 +93,20 @@ export class TestDto {
   testMultiDimensionalArray!: [number, string, [string, number, ChildObject]];
 
   constructor(@tstoString() public anotherTestString: string) {}
+}
+
+// my-controller.ts
+import { tstoFrom } from 'tsto';
+
+class MyController {
+  @get()
+  get(body: TestDto) {
+    // ^^^^^^^^^^^^ Here body is not yet actually the TestDto class, it's just syntactic sugar.
+    // That's why we parse it through tsto, so that we get a proper instance of TestDto to work with.
+    const testDto = tstoFrom(body, TestDto);
+    // ^^^^^^^^^^^^ Here we have a proper instance of TestDto.
+    // ...
+  }
 }
 ```
 
