@@ -55,13 +55,23 @@ export class TstoFromTests {
     expected.testArray = [childObject];
 
     const obj = {
+      anotherTestString: 'test4',
       testString: 'test',
       testNumber: 1,
       testObject: {
         anotherTestString: 'test2',
+        yetAnotherTestString: 'test5',
+        grandChild: {},
         anotherTestNumber: 2,
       },
-      testArray: [{ anotherTestNumber: 3, anotherTestString: 'test3' }],
+      testArray: [
+        {
+          anotherTestString: 'test3',
+          yetAnotherTestString: 'test6',
+          grandChild: {},
+          anotherTestNumber: 3,
+        },
+      ],
     };
 
     const resultObj = tstoFrom(obj, TestDto);
