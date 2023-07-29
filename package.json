@@ -1,7 +1,16 @@
 {
   "name": "tsto",
   "version": "0.1.0",
-  "description": "",
+  "description": "Typescript Transfer Objects - library for seamlessly transform loosly typed input into strongly typed output.",
+  "keywords": [
+    "typescript",
+    "dto",
+    "mapping",
+    "decorators",
+    "annotation",
+    "transfer",
+    "object"
+  ],
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -15,7 +24,7 @@
     "hooks:precommit": "npm run lint-staged",
     "prepublish": "npm run build && rimraf -v -g ./dist/**/*.spec.d.ts ./dist/**/*.spec.js ./dist/**/*.spec.js.map"
   },
-  "author": "",
+  "author": "Lars von Qualen <lars@lvq.dk>",
   "license": "MIT",
   "peerDependencies": {
     "typescript": "^3.9.4"
