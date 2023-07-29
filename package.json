@@ -8,12 +8,12 @@
   ],
   "scripts": {
     "start": "chokidar -c \"npm test\" \"**/*.ts\"",
-    "build": "tsc --project tsconfig.json && rimraf -v -g ./dist/**/*.spec.d.ts ./dist/**/*.spec.js ./dist/**/*.spec.js.map",
+    "build": "tsc --project tsconfig.json",
     "test": "testyts",
     "lint-staged": "lint-staged",
     "prepare": "husky install",
     "hooks:precommit": "npm run lint-staged",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build && rimraf -v -g ./dist/**/*.spec.d.ts ./dist/**/*.spec.js ./dist/**/*.spec.js.map"
   },
   "author": "",
   "license": "MIT",

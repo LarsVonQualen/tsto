@@ -2,6 +2,7 @@ import { expect, Test, TestSuite } from 'testyts';
 import {
   tsto,
   tstoArray,
+  tstoEnum,
   tstoFrom,
   tstoNumber,
   tstoObject,
@@ -9,23 +10,28 @@ import {
   TstoSubArrayElementType,
 } from './';
 
+enum TestEnum {
+  FirstOption = 1,
+  SecondOption = 2,
+}
+
 @tsto()
 export class GrandChild {
-  constructor() {}
+  constructor(
+    @tstoEnum(TestEnum) public testEnum: TestEnum,
+    @tstoEnum(TestEnum, { useStringsAsInput: true })
+    public anotherTestEnum: TestEnum,
+  ) {}
 }
 
 @tsto()
 export class ChildObject {
-  @tstoNumber()
-  anotherTestNumber!: number;
-
   constructor(
+    @tstoNumber() public anotherTestNumber: number,
     @tstoString() public anotherTestString: string,
     @tstoString() public yetAnotherTestString: string,
     @tstoObject(GrandChild) public grandChild: GrandChild,
   ) {}
-
-  testFn() {}
 }
 
 @tsto()
@@ -65,11 +71,12 @@ export class TstoFromTests {
     const expected = new TestDto('test4');
     expected.testString = 'test';
     expected.testNumber = 1;
-    const grandChild = new GrandChild();
-    expected.testObject = new ChildObject('test2', 'test5', grandChild);
-    expected.testObject.anotherTestNumber = 2;
-    const childObject = new ChildObject('test3', 'test6', grandChild);
-    childObject.anotherTestNumber = 3;
+    const grandChild = new GrandChild(
+      TestEnum.FirstOption,
+      TestEnum.SecondOption,
+    );
+    expected.testObject = new ChildObject(2, 'test2', 'test5', grandChild);
+    const childObject = new ChildObject(3, 'test3', 'test6', grandChild);
     expected.testArray = [childObject];
     expected.testStringArray = ['test7', 'test8'];
     expected.testNumberArray = [4, 5];
@@ -82,14 +89,14 @@ export class TstoFromTests {
       testObject: {
         anotherTestString: 'test2',
         yetAnotherTestString: 'test5',
-        grandChild: {},
+        grandChild: { testEnum: 1, anotherTestEnum: 'SecondOption' },
         anotherTestNumber: 2,
       },
       testArray: [
         {
           anotherTestString: 'test3',
           yetAnotherTestString: 'test6',
-          grandChild: {},
+          grandChild: { testEnum: 1, anotherTestEnum: 'SecondOption' },
           anotherTestNumber: 3,
         },
       ],
@@ -104,7 +111,7 @@ export class TstoFromTests {
           {
             anotherTestString: 'test3',
             yetAnotherTestString: 'test6',
-            grandChild: {},
+            grandChild: { testEnum: 1, anotherTestEnum: 'SecondOption' },
             anotherTestNumber: 3,
           },
         ],

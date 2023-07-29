@@ -1,10 +1,8 @@
 export { arrayDecorator as tstoArray } from './internal/decorators/array.decorator';
 export { classDecorator as tsto } from './internal/decorators/class.decorator';
-export { mixedArrayDecorator as tstoMixedArray } from './internal/decorators/mixed-array.decorator';
+export { enumDecorator as tstoEnum } from './internal/decorators/enum.decorator';
 export { numberDecorator as tstoNumber } from './internal/decorators/number.decorator';
-export { objectArrayDecorator as tstoObjectArray } from './internal/decorators/object-array.decorator';
 export { objectDecorator as tstoObject } from './internal/decorators/object.decorator';
-export { primitiveArrayDecorator as tstoPrimitiveArray } from './internal/decorators/primitive-array.decorator';
 export { stringDecorator as tstoString } from './internal/decorators/string.decorator';
 export { from as tstoFrom } from './internal/from.fn';
 export { SubArrayElementType as TstoSubArrayElementType } from './internal/sub-array-element-type';
