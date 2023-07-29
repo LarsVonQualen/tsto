@@ -1,6 +1,6 @@
 import { Constructor } from './constructor.type';
-import { TstoSupportedPrimitiveTypes } from './tsto-supported-property-types.type';
+import { SupportedPrimitiveTypes } from './supported-property-types.type';
 
 export type SimpleArrayElementTypes =
   | Constructor<any>
-  | TstoSupportedPrimitiveTypes;
+  | SupportedPrimitiveTypes;

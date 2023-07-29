@@ -6,10 +6,13 @@ import {
   tstoNumber,
   tstoObject,
   tstoString,
+  TstoSubArrayElementType,
 } from './';
 
 @tsto()
-export class GrandChild {}
+export class GrandChild {
+  constructor() {}
+}
 
 @tsto()
 export class ChildObject {
@@ -45,6 +48,13 @@ export class TestDto {
   @tstoArray('number')
   testNumberArray!: number[];
 
+  @tstoArray([
+    'number',
+    'string',
+    TstoSubArrayElementType.create(['string', 'number', ChildObject]),
+  ])
+  testMultiDimensionalArray!: [number, string, [string, number, ChildObject]];
+
   constructor(@tstoString() public anotherTestString: string) {}
 }
 
@@ -63,6 +73,7 @@ export class TstoFromTests {
     expected.testArray = [childObject];
     expected.testStringArray = ['test7', 'test8'];
     expected.testNumberArray = [4, 5];
+    expected.testMultiDimensionalArray = [0, 'str', ['str1', 1, childObject]];
 
     const obj = {
       anotherTestString: 'test4',
@@ -84,11 +95,25 @@ export class TstoFromTests {
       ],
       testStringArray: ['test7', 'test8'],
       testNumberArray: [4, 5],
+      testMultiDimensionalArray: [
+        0,
+        'str',
+        [
+          'str1',
+          1,
+          {
+            anotherTestString: 'test3',
+            yetAnotherTestString: 'test6',
+            grandChild: {},
+            anotherTestNumber: 3,
+          },
+        ],
+      ],
     };
 
     const resultObj = tstoFrom(obj, TestDto);
     expect.toBeTrue(resultObj instanceof TestDto);
-    // expect.toBeTrue(resultObj?.testArray[0] instanceof ChildObject);
+    expect.toBeTrue(resultObj?.testArray[0] instanceof ChildObject);
     expect.toBeEqual(
       JSON.stringify(resultObj),
       JSON.stringify(expected),

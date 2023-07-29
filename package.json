@@ -12,7 +12,8 @@
     "test": "testyts",
     "lint-staged": "lint-staged",
     "prepare": "husky install",
-    "hooks:precommit": "npm run lint-staged"
+    "hooks:precommit": "npm run lint-staged",
+    "prepublish": "npm run build"
   },
   "author": "",
   "license": "MIT",
@@ -44,5 +45,8 @@
     "*.{json,html,js,pug,yml,scss}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.1.13"
   }
 }

@@ -5,7 +5,7 @@ import {
 } from './create-handler.fn';
 import { Constructor } from './types/constructor.type';
 
-export class TstoObjectManager<Target> {
+export class ObjectManager<Target> {
   public propertyHandlers: PropertyHandler[] = [];
   public constructorParameterHandlers: ConstructorParameterHandler[] = [];
 
@@ -13,16 +13,15 @@ export class TstoObjectManager<Target> {
 
   registerHandler<T>(
     mapper: (rawValue?: T | null) => any,
-    validator: (rawValue?: T | null) => any,
     key?: string,
     parameterIndex?: any,
   ) {
     if (key !== undefined) {
-      const handler = createHandler(key, mapper, validator);
+      const handler = createHandler(key, mapper);
 
       this.propertyHandlers.push(handler);
     } else {
-      const handler = createHandler(parameterIndex, mapper, validator);
+      const handler = createHandler(parameterIndex, mapper);
 
       this.constructorParameterHandlers.push(handler);
     }
@@ -50,7 +49,7 @@ export class TstoObjectManager<Target> {
   }
 
   private createNewTargetInstance(obj: object) {
-    const ctor = this.target.constructor as Constructor<Target>;
+    const ctor = this.target;
 
     if (!ctor) {
       throw new Error(
@@ -59,7 +58,7 @@ export class TstoObjectManager<Target> {
     }
 
     if (this.constructorParameterHandlers.length === 0) {
-      return new this.target();
+      return new ctor();
     }
 
     const contructorDefinition = ctor.toString() as string;

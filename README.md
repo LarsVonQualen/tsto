@@ -1,4 +1,4 @@
-# tsto
+# tsto - Typescript Transfer Objects
 
 ![Build status](https://github.com/larsvonqualen/tsto/actions/workflows/ci.yml/badge.svg?branch=main)
 
